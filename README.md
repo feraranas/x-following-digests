@@ -8,6 +8,7 @@ Immutable archive of categorized digests from [@FernandoArana_S](https://x.com/F
 - `index.jsonl` — append-only machine index (one JSON object per post)
 - `SCHEMA.md` — field definitions for `index.jsonl` (currently **v2**: `tweet_id`, `tags`, `entities`)
 - `tools/search.py` — local SQLite FTS5 search over `index.jsonl`
+- `tests/` — unittest harness with a fixed fixture (not the live digest)
 
 ## Index fields (v2)
 
@@ -32,3 +33,13 @@ python3 tools/search.py memory --tag agents --rebuild
 ```
 
 Stdlib only (`sqlite3` + `argparse`).
+
+## Tests
+
+Harness: fixed `tests/fixtures/sample_index.jsonl` → temp SQLite → call `search.rebuild` / `search.search` / CLI `main()`.
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+No pytest required. Live `index.jsonl` is not used in CI-style unit tests so growing digests cannot flake assertions.
