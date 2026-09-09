@@ -9,6 +9,7 @@ Immutable archive of categorized digests from [@FernandoArana_S](https://x.com/F
 - `SCHEMA.md` — field definitions for `index.jsonl` (currently **v2**: `tweet_id`, `tags`, `entities`)
 - `tools/search.py` — local SQLite FTS5 search over `index.jsonl`
 - `tests/` — unittest harness with a fixed fixture (not the live digest)
+- `TAGS.md` — controlled tag vocabulary + yes/no examples (what to `--tag` search)
 
 ## Index fields (v2)
 
@@ -33,6 +34,14 @@ python3 tools/search.py memory --tag agents --rebuild
 ```
 
 Stdlib only (`sqlite3` + `argparse`).
+
+## Controlled tags
+
+See [`TAGS.md`](./TAGS.md) for the allowed `tags[]` values and yes/no examples (start with `ai-economics`).
+
+```bash
+python3 tools/search.py --tag ai-economics
+```
 
 ## Tests
 
