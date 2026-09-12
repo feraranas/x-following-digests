@@ -15,9 +15,9 @@ jobs:
         run: |
           set -euo pipefail
           cat _restore/part01.jsonl _restore/part02.jsonl _restore/part03.jsonl _restore/part04.jsonl _restore/part05.jsonl _restore/part06.jsonl _restore/part07.jsonl _restore/part08.jsonl _restore/part09.jsonl _restore/part10.jsonl > index.jsonl
-          test "$(wc -l < index.jsonl)" -eq 99
-          echo "f262b6e264d4e5494ff13a2b58c8889f50d24d88a4db56f945f86492c279912f  index.jsonl" | sha256sum -c
-          python3 -c "import json; lines=open('index.jsonl').read().splitlines(); assert json.loads(lines[-1])['tweet_id']=='2098526245013377458'"
+          test "$(wc -l < index.jsonl)" -eq 101
+          echo "b738bf232082c29040399ad6a905b2f94b1be5af97774f703c72ed4725197e39  index.jsonl" | sha256sum -c
+          python3 -c "import json; lines=open('index.jsonl').read().splitlines(); assert len(lines)==101; assert json.loads(lines[-1])['tweet_id']=='2098540056113787055'; assert json.loads(lines[-2])['tweet_id']=='2098551041994215761'; assert all('PLACEHOLDER' not in ln for ln in lines)"
       - name: Commit index.jsonl
         run: |
           set -euo pipefail
@@ -25,5 +25,5 @@ jobs:
           git config user.email "feraranas@gmail.com"
           git add index.jsonl
           if git diff --cached --quiet; then echo "no change"; exit 0; fi
-          git commit -m "digest 2026-09-11 16:00 Mexico City (index)"
+          git commit -m "digest 2026-09-11 20:00 Mexico City (index)"
           git push
