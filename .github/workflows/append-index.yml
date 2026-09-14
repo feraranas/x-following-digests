@@ -1,0 +1,54 @@
+name: append-index
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "_append/**"
+jobs:
+  append:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Append new rows into index.jsonl (dedupe by tweet_id)
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          index_path = pathlib.Path('index.jsonl')
+          lines = index_path.read_text().splitlines() if index_path.exists() else []
+          seen = set()
+          rows = []
+          for line in lines:
+              o = json.loads(line)
+              tid = str(o.get('tweet_id') or '')
+              if tid:
+                  seen.add(tid)
+              rows.append(line)
+          added = 0
+          for path in sorted(pathlib.Path('_append').glob('*.jsonl')):
+              for line in path.read_text().splitlines():
+                  line = line.strip()
+                  if not line:
+                      continue
+                  o = json.loads(line)
+                  tid = str(o.get('tweet_id') or '')
+                  if tid and tid in seen:
+                      continue
+                  if tid:
+                      seen.add(tid)
+                  rows.append(json.dumps(o, ensure_ascii=False, separators=(',', ':')))
+                  added += 1
+          index_path.write_text('\n'.join(rows) + ('\n' if rows else ''))
+          print(f'rows={len(rows)} added={added}')
+          PY
+      - name: Commit index.jsonl
+        run: |
+          set -euo pipefail
+          git config user.name "Ferdinand"
+          git config user.email "feraranas@gmail.com"
+          git add index.jsonl
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "digest: merge _append into index.jsonl"
+          git push
