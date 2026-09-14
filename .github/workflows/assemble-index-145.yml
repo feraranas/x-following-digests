@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "_restore_noon/part*.jsonl"
+      - "_restore_noon/part8.jsonl"
 jobs:
   assemble:
     runs-on: ubuntu-latest
