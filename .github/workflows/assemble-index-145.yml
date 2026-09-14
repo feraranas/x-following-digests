@@ -1,0 +1,35 @@
+name: assemble-index-145
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "_restore_noon/part*.jsonl"
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble index.jsonl
+        run: |
+          set -euo pipefail
+          cat _restore_noon/part1.jsonl _restore_noon/part2.jsonl _restore_noon/part3.jsonl _restore_noon/part4.jsonl _restore_noon/part5.jsonl _restore_noon/part6.jsonl _restore_noon/part7.jsonl _restore_noon/part8.jsonl > index.jsonl
+          test "$(wc -l < index.jsonl)" -eq 145
+          python3 - <<'PY'
+          import json
+          lines=open("index.jsonl").read().splitlines()
+          assert len(lines)==145
+          assert all(json.loads(l).get("schema_version")==2 for l in lines)
+          assert any(json.loads(l).get("tweet_id")=="2099555517890727949" for l in lines)
+          print("ok", len(lines))
+          PY
+      - name: Commit index.jsonl
+        run: |
+          set -euo pipefail
+          git config user.name "Ferdinand"
+          git config user.email "feraranas@gmail.com"
+          git add index.jsonl
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "restore index.jsonl to 145 lines (2026-09-14 12:00 noon)"
+          git push
