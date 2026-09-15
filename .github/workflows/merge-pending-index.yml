@@ -1,0 +1,60 @@
+name: Merge pending index appends
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'pending/**.jsonl'
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Append pending JSONL into index.jsonl
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(pending/*.jsonl)
+          if [ ${#files[@]} -eq 0 ]; then echo 'nothing to merge'; exit 0; fi
+          for f in "${files[@]}"; do
+            echo "Merging $f"
+            # dedupe by tweet_id
+            python3 - <<'PY'
+import json, pathlib, sys
+index_path = pathlib.Path('index.jsonl')
+pending = pathlib.Path(sys.argv[1])
+known=set()
+rows=[]
+if index_path.exists():
+    for line in index_path.read_text().splitlines():
+        if not line.strip():
+            continue
+            o=json.loads(line)
+            rows.append(o)
+            tid=str(o.get('tweet_id') or '')
+            if tid: known.add(tid)
+added=0
+for line in pending.read_text().splitlines():
+    if not line.strip():
+        continue
+    o=json.loads(line)
+    tid=str(o.get('tweet_id') or '')
+    if tid and tid in known:
+        continue
+    rows.append(o)
+    if tid: known.add(tid)
+    added+=1
+index_path.write_text(''.join(json.dumps(r,ensure_ascii=False,separators=(',',':'))+'\n' for r in rows))
+print('added', added, 'total', len(rows))
+pending.unlink()
+print('removed', pending)
+PY
+            "$f"
+          done
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.jsonl pending || true
+          if git diff --cached --quiet; then echo 'no changes'; exit 0; fi
+          git commit -m "merge pending index appends"
+          git push
