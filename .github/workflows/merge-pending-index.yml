@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'pending/**.jsonl'
+      - 'pending/*.jsonl'
 jobs:
   merge:
     runs-on: ubuntu-latest
