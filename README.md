@@ -9,6 +9,7 @@ Immutable archive of categorized digests from [@FernandoArana_S](https://x.com/F
 - `SCHEMA.md` — field definitions for `index.jsonl` (currently **v2**: `tweet_id`, `tags`, `entities`)
 - `tools/search.py` — local SQLite FTS5 search over `index.jsonl`
 - `tests/` — unittest harness with a fixed fixture (not the live digest)
+- `papers/ferdinand-times/YYYY-MM-DD.pdf` — The Ferdinand Times, daily morning paper PDFs
 - `TAGS.md` — controlled tag vocabulary + yes/no examples (what to `--tag` search)
 
 ## Index fields (v2)
